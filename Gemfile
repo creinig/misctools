@@ -2,6 +2,9 @@
 
 source "https://rubygems.org"
 
+# Specify your gem's dependencies in misctools.gemspec
+gemspec
+
 gem "standard", "~> 1.41"
 gem "simplecov", "~> 0.22.0"
 
