@@ -13,3 +13,5 @@ gem "rake", "~> 13.2"
 gem "ruby-units", "~> 4.1"
 
 gem "rqrcode", "~> 2.2"
+
+gem "getoptlong", "~> 0.2.1"

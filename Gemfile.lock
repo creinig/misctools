@@ -9,6 +9,7 @@ GEM
     ast (2.4.2)
     chunky_png (1.4.0)
     docile (1.4.1)
+    getoptlong (0.2.1)
     json (2.8.1)
     language_server-protocol (3.17.0.3)
     lint_roller (1.1.0)
@@ -66,6 +67,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  getoptlong (~> 0.2.1)
   misctools!
   rake (~> 13.2)
   rqrcode (~> 2.2)
