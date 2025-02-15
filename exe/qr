@@ -11,9 +11,9 @@ opts = GetoptLong.new(
   opt_flag("ansi")
 )
 
-if opts.empty? || opts.include?("help") || ARGV.empty?
+if opts.include?("help") || ARGV.empty?
   puts <<-HELP
-  Usage: qr.rb [options] <text to encode>
+  Usage: qr [options] <text to encode>
   Options:
     --help, -h : show this help
     --ansi, -a : render as ansi (default)
