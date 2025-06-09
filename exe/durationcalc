@@ -1,17 +1,16 @@
-#!/usr/bin/env ruby 
+#!/usr/bin/env ruby
 
 require "bundler/setup"
 require "ruby-units"
 
 def toHM(unit)
   mins = unit.convert_to("min").scalar.to_i
-  sprintf("%d:%02d", mins/60, mins%60)
+  sprintf("%d:%02d", mins / 60, mins % 60)
 end
 
 def pcurrent
   puts "Current value: #{toHM(@duration)}"
 end
-
 
 @duration = "0:00".to_unit
 
@@ -25,11 +24,11 @@ puts "Exit with Ctrl-D or 'x'"
 puts
 pcurrent
 
-while line = gets 
+while (line = gets)
   case line.strip
-  when /^=\s*(\d+:\d+)/ 
+  when /^=\s*(\d+:\d+)/
     @duration = $~[1].to_unit
-  when /^-\s*(\d+:\d+)/ 
+  when /^-\s*(\d+:\d+)/
     @duration -= $~[1].to_unit
   when /\d+:\d+/
     @duration += $~[0].to_unit
@@ -43,5 +42,3 @@ while line = gets
 
   pcurrent
 end
-
-
