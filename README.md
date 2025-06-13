@@ -9,4 +9,4 @@ Random collection of small tools I needed at the moment
 
 Dependencies are managed via [bundler](https://bundler.io/). To install everything (locally in this directory) simply run `bundle install`.
 
-The tools themselves can be installed locally via `rake install`.
+The tools themselves can be installed locally via `bundle exec rake install`.
