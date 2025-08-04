@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 if [[ -e $1 ]] ; then
-    echo "Usage: querymvn <group>:<artifact>:<type>:<version>"
+    echo "Usage: "
+    echo "       querymvn <group>:<artifact>:<type>:<version>"
+    echo "       querymvn <url>"
     echo "  example: querymvn org.apache.commons:commons-lang3:jar:3.8.1"
     exit 1
 fi
@@ -10,20 +12,25 @@ BASEURL=$(grep -E "<url>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<url>(
 USERNAME=$(grep -E "<username>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<username>(.*)</username>.*#\1#')
 PASSWORD=$(grep -E "<password>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<password>(.*)</password>.*#\1#')
 
-PKG="$1"
-GROUP=$(echo -n "$PKG" | cut -d ':' -f 1)
-ARTIFACT=$(echo -n "$PKG" | cut -d ':' -f 2)
-TYPE=$(echo -n "$PKG" | cut -d ':' -f 3)
-VERSION=$(echo -n "$PKG" | cut -d ':' -f 4)
-FILENAME="$ARTIFACT-$VERSION.$TYPE"
+if [[ ${1%//*} == "https:" ]] || [[ ${1%//*} == "http:" ]] ; then
+    URL="$1"
+else
+    PKG="$1"
+    GROUP=$(echo -n "$PKG" | cut -d ':' -f 1)
+    ARTIFACT=$(echo -n "$PKG" | cut -d ':' -f 2)
+    TYPE=$(echo -n "$PKG" | cut -d ':' -f 3)
+    VERSION=$(echo -n "$PKG" | cut -d ':' -f 4)
+    FILENAME="$ARTIFACT-$VERSION.$TYPE"
+    PKGPATH="$(echo -n "$GROUP" | sed -r -e 's#\.#/#g')/$ARTIFACT/$VERSION/$FILENAME"
+    URL="$BASEURL/$PKGPATH"
+fi
 
 rm "$FILENAME"
 
-PKGPATH="$(echo -n "$GROUP" | sed -r -e 's#\.#/#g')/$ARTIFACT/$VERSION/$FILENAME"
-curl -u "$USERNAME:$PASSWORD" --basic -LO -v "$BASEURL/$PKGPATH"
+curl -u "$USERNAME:$PASSWORD" --basic -LO -v "$URL"
 
 if [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q -i 'JSON') ; then
     jq . <"$FILENAME"
-elif [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q 'text') ; then
+elif [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q -i 'text') ; then
     cat "$FILENAME"
 fi
