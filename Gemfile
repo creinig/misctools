@@ -17,5 +17,3 @@ gem "rqrcode", "~> 2.2"
 gem "getoptlong", "~> 0.2.1"
 
 gem "yard", "~> 0.9.37"
-
-gem "solargraph", "~> 0.55.1", :group => :development

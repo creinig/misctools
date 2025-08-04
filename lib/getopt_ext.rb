@@ -1,5 +1,6 @@
 require "getoptlong"
 
+# Extends GetoptLong to add a #to_h method
 class GetoptLong
   def to_h
     return @hashed if @hashed

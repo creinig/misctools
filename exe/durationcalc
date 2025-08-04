@@ -3,11 +3,15 @@
 require "bundler/setup"
 require "ruby-units"
 
+# Convert the input to a "HH:mm" string
+#
+# @param unit [RubyUnits::Unit] the unit of time
 def toHM(unit)
   mins = unit.convert_to("min").scalar.to_i
   sprintf("%d:%02d", mins / 60, mins % 60)
 end
 
+# Print the current time balance
 def pcurrent
   puts "Current value: #{toHM(@duration)}"
 end
