@@ -14,6 +14,7 @@ PASSWORD=$(grep -E "<password>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*
 
 if [[ ${1%//*} == "https:" ]] || [[ ${1%//*} == "http:" ]] ; then
     URL="$1"
+    FILENAME="${URL##*/}"
 else
     PKG="$1"
     GROUP=$(echo -n "$PKG" | cut -d ':' -f 1)
@@ -25,12 +26,25 @@ else
     URL="$BASEURL/$PKGPATH"
 fi
 
+if command -v bat >/dev/null 2>&1 ; then
+    FORMATTER="bat"
+else
+    FORMATTER="cat"
+fi
+
+if command -v jq >/dev/null 2>&1 ; then
+    JSON_FORMATTER="jq ."
+else
+    JSON_FORMATTER="$FORMATTER"
+fi
+
+
 rm "$FILENAME"
 
 curl -u "$USERNAME:$PASSWORD" --basic -LO -v "$URL"
 
 if [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q -i 'JSON') ; then
-    jq . <"$FILENAME"
+    $JSON_FORMATTER <"$FILENAME"
 elif [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q -i 'text') ; then
-    cat "$FILENAME"
+    $FORMATTER "$FILENAME"
 fi
