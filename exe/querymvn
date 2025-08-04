@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+if [[ -e $1 ]] ; then
+    echo "Usage: querymvn <group>:<artifact>:<type>:<version>"
+    echo "  example: querymvn org.apache.commons:commons-lang3:jar:3.8.1"
+    exit 1
+fi
+
+BASEURL=$(grep -E "<url>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<url>(.*)</url>.*#\1#')
+USERNAME=$(grep -E "<username>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<username>(.*)</username>.*#\1#')
+PASSWORD=$(grep -E "<password>" ~/.m2/settings.xml | head -n 1 | sed -r -e 's#.*<password>(.*)</password>.*#\1#')
+
+PKG="$1"
+GROUP=$(echo -n "$PKG" | cut -d ':' -f 1)
+ARTIFACT=$(echo -n "$PKG" | cut -d ':' -f 2)
+TYPE=$(echo -n "$PKG" | cut -d ':' -f 3)
+VERSION=$(echo -n "$PKG" | cut -d ':' -f 4)
+FILENAME="$ARTIFACT-$VERSION.$TYPE"
+
+rm "$FILENAME"
+
+PKGPATH="$(echo -n "$GROUP" | sed -r -e 's#\.#/#g')/$ARTIFACT/$VERSION/$FILENAME"
+curl -u "$USERNAME:$PASSWORD" --basic -LO -v "$BASEURL/$PKGPATH"
+
+if [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q -i 'JSON') ; then
+    jq . <"$FILENAME"
+elif [[ -e $FILENAME ]] && (file "$FILENAME" | grep -E -q 'text') ; then
+    cat "$FILENAME"
+fi
