@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+if [[ $1 == "--help" ]] ; then
+  echo "Usage: $0 [repo_substr [branch_substr]]"
+  echo
+  echo "Will list all matching pipeline runs, display them with fzf and open the selected one in the browser"
+  echo "If no arguments are given and the current dir is inside an azdo git repo,"
+  echo "  only pipeline runs for the current repo and branch are queried."
+  return
+fi
+
+# For highlighting based on status
+AZDO_PIPELINE_COLORS='
+  /canceled/  { printf "\033[38;5;243m" }
+  /failed/    { printf "\033[38;5;124m" }
+  /succeeded/ { printf "\033[38;5;40m" }
+  //          { print $0 "\033[0m"; }'
+
+SELECTOR=""
+
+if [[ -n $2 ]] ; then
+  SELECTOR="?contains(repository.name, \`$1\`) && contains(sourceBranch, \`$2\`)"
+elif [[ -n $1 ]] ; then
+  SELECTOR="?contains(repository.name, \`$1\`)"
+else
+  REMOTE=$(git config --get remote.origin.url)
+
+  if grep -q -F "dev.azure.com" <(echo "$REMOTE") ; then
+    REPO=$(basename -s .git "$REMOTE")
+    BRANCH=$(git branch --show-current)
+    SELECTOR="?repository.name == \`$REPO\` && contains(sourceBranch, \`$BRANCH\`)"
+  fi
+fi
+
+# Get all matching pipeline runs as table,
+# make the timestamps easier to read, 
+# highlight based on status,
+# allow selection via fzf
+PIPELINE_ID=$(cat \
+  <(az pipelines runs list --top 20 --query "[$SELECTOR].{ID: id, Start: startTime, Finish: finishTime, Repo: repository.name, Branch: sourceBranch, Status: status, Result: result, Trigger: reason, TriggerBy: lastChangedBy.displayName}" -o table \
+    | sed -E -e 's/([0-9-]+)T([0-9:]+).......(\+[0-9:]+)/\1 \2 \3      /g' \
+    | awk "$AZDO_PIPELINE_COLORS") \
+  | fzf --ansi --header-lines=2 --info-command='echo "<enter>: open in browser / <ctrl-c>: exit"' \
+  | cut -d ' ' -f 1 \
+)
+
+if [[ -n $PIPELINE_ID ]] ; then
+  az pipelines runs show --open -o table --id "$PIPELINE_ID"
+fi
+
