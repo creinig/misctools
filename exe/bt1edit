@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby -wKU
+
+require "pp"
+require "fileutils"
+require "date"
+
+FORMAT = "
+a16 # 00 name
+c   # 01 char / party indicator
+a4  # 02 unknown (nul)
+s<  # 03 class
+s<5 # 04..08 current attrs
+s<5 # 09..13 full attrs
+s<  # 14 unknown
+s<  # 15 max HP
+s<  # 16 current HP
+s<  # 17 current SP
+s<  # 18 max SP
+c*  # everything else"
+
+# Read the file
+def read(name)
+  File.open(name, "rb") { |f| f.read.unpack(FORMAT) }
+end
+
+
+# Check whether the file represents a character
+def is_char(data)
+  data[1] == 0x01
+end
+
+# Display character summary
+def show(data)
+  puts "Name:  #{data[0]}"
+  puts "Class: #{data[3]}"
+  puts "Attrs: ST #{data[4]}/#{data[9]}, IQ #{data[5]}/#{data[10]}, DX #{data[6]}/#{data[11]}, CN #{data[7]}/#{data[12]}, LK #{data[8]}/#{data[13]}"
+  puts "HP:    #{data[16]}/#{data[15]}"
+  puts "SP:    #{data[17]}/#{data[18]}"
+end
+
+# Heal character (fill HP and SP)
+def heal(data)
+  data[16] = data[15]
+  data[17] = data[18]
+  data
+end
+
+def backup(name)
+  FileUtils.mkdir_p("backup")
+  FileUtils.cp(name, "backup/#{name}-#{Time.now.strftime('%FT%T%:z')}")
+end
+
+# Write character back, storing a backup copy in ./backup
+def write(data, name)
+  backup(name)
+  File.open(name, "wb") { |f| f.write(data.pack(FORMAT)) }
+end
+
+# Main ---------------------------
+
+name = ARGV[0]
+data = read(name)
+
+unless is_char(data)
+  puts "Not a character"
+  pp data
+  exit 1
+end
+
+puts "== Before"
+show data
+puts
+heal data
+puts "== After"
+show data
+write(data, name)
