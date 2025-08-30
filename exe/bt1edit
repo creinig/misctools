@@ -6,7 +6,7 @@ require "fileutils"
 class Bt1Char
   STRUCTURE = {
     # attr, startidx, pack_pattern
-    name: [0x00, "a16"],
+    name: [0x00, "a16", lambda {|v| v.split("\x00")[0] }],
     st: [0x17, "s<"],
     iq: [0x19, "s<"],
     dx: [0x1b, "s<"],
@@ -33,7 +33,8 @@ class Bt1Char
       binary = args.pack(spec[1])
       @data[spec[0], binary.size] = binary
     else
-      @data[spec[0], 32].unpack1(spec[1])
+      val = @data[spec[0], 32].unpack1(spec[1])
+      spec[2] ? spec[2].yield(val) : val
     end
   end
 
