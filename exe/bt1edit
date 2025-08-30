@@ -9,7 +9,6 @@
 # - yardoc etc
 # - tests
 # - operate on all chars in party file
-# - default to "do not write"
 
 require "fileutils"
 
@@ -91,7 +90,7 @@ class Operations
   def initialize(cmd_args)
     cmd_args = ["show"] if cmd_args.empty?
 
-    @write_at_end = true
+    @write_at_end = false
     @modifies = false
 
     @ops = cmd_args.map do |cmd|
@@ -104,8 +103,8 @@ class Operations
       in "exp", /^\d+$/ => xp
         @modifies = true
         lambda { |char| char.exp = xp.to_i }
-      in ["-n"]
-        @write_at_end = false
+      in ["-w"]
+        @write_at_end = true
         nil
       else
         raise "Unknown command <#{cmd}>"
