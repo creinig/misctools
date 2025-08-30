@@ -2,7 +2,6 @@
 
 # TODO:
 # - print usage if no files
-# - heal attrs
 # - print "written w/ backup" / "not written"
 # - cmd attrs=xy
 # - money
@@ -16,20 +15,20 @@ class Bt1Char
   STRUCTURE = {
     # attr, startidx, pack_pattern [, read_postprocessor]
     name: [0x00, "a16", lambda {|v| v.split("\x00")[0] }],
-    st: [0x17, "s<"],
-    iq: [0x19, "s<"],
-    dx: [0x1b, "s<"],
-    cn: [0x1d, "s<"],
-    lk: [0x1f, "s<"],
-    st_max: [0x21, "s<"],
-    iq_max: [0x23, "s<"],
-    dx_max: [0x25, "s<"],
-    cn_max: [0x27, "s<"],
-    lk_max: [0x29, "s<"],
-    hp: [0x2d, "s<"],
-    hp_max: [0x2f, "s<"],
-    sp: [0x31, "s<"],
-    sp_max: [0x33, "s<"],
+    st_cur: [0x17, "s<"],
+    iq_cur: [0x19, "s<"],
+    dx_cur: [0x1b, "s<"],
+    cn_cur: [0x1d, "s<"],
+    lk_cur: [0x1f, "s<"],
+    st: [0x21, "s<"],
+    iq: [0x23, "s<"],
+    dx: [0x25, "s<"],
+    cn: [0x27, "s<"],
+    lk: [0x29, "s<"],
+    hp_cur: [0x2d, "s<"],
+    hp: [0x2f, "s<"],
+    sp_cur: [0x31, "s<"],
+    sp: [0x33, "s<"],
     exp: [0x45, "l<"]
   }
 
@@ -56,16 +55,17 @@ class Bt1Char
   # Display character summary
   def show
     puts "Name:  #{name}"
-    puts "Attrs: ST #{st}/#{st_max}, IQ #{iq}/#{iq_max}, DX #{dx}/#{dx_max}, CN #{cn}/#{cn_max}, LK #{lk}/#{lk_max}"
-    puts "HP:    #{hp}/#{hp_max}"
-    puts "SP:    #{sp}/#{sp_max}"
+    puts "Attrs: ST #{st_cur}/#{st}, IQ #{iq_cur}/#{iq}, DX #{dx_cur}/#{dx}, CN #{cn_cur}/#{cn}, LK #{lk_cur}/#{lk}"
+    puts "HP:    #{hp_cur}/#{hp}"
+    puts "SP:    #{sp_cur}/#{sp}"
     puts "Exp:   #{exp}"
   end
 
   # Heal character (fill HP and SP)
   def heal
-    self.hp = hp_max
-    self.sp = sp_max
+    self.hp_cur = hp
+    self.sp_cur = sp
+    self.st_cur, self.dx_cur, self.iq_cur, self.cn_cur, self.lk_cur = st, dx, iq, cn, lk
   end
 
   # Write character back, storing a backup copy in ./backup
