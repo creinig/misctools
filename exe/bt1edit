@@ -1,48 +1,69 @@
-#!/usr/bin/env ruby -wKU
+#!/usr/bin/env ruby 
 
 require "pp"
 require "fileutils"
-require "date"
 
-FORMAT = "
-a16 # 00 name
-c   # 01 char / party indicator
-a4  # 02 unknown (nul)
-s<  # 03 class
-s<5 # 04..08 current attrs
-s<5 # 09..13 full attrs
-s<  # 14 unknown
-s<  # 15 max HP
-s<  # 16 current HP
-s<  # 17 current SP
-s<  # 18 max SP
-c*  # everything else"
+class Bt1Char
+  STRUCTURE = {
+    # attr, startidx, pack_pattern
+    name: [0x00, "a16"],
+    st: [0x17, "s<"],
+    iq: [0x19, "s<"],
+    dx: [0x1b, "s<"],
+    cn: [0x1d, "s<"],
+    lk: [0x1f, "s<"],
+    st_max: [0x21, "s<"],
+    iq_max: [0x23, "s<"],
+    dx_max: [0x25, "s<"],
+    cn_max: [0x27, "s<"],
+    lk_max: [0x29, "s<"],
+    hp: [0x2d, "s<"],
+    hp_max: [0x2f, "s<"],
+    sp: [0x31, "s<"],
+    sp_max: [0x33, "s<"],
+    exp: [0x45, "l<"]
+  }
 
-# Read the file
-def read(name)
-  File.open(name, "rb") { |f| f.read.unpack(FORMAT) }
-end
+  def method_missing(name, *args)
+    attr = name.to_s.delete_suffix("=").to_sym
+    spec = STRUCTURE[attr]
+    return super unless spec
+
+    if name.end_with? "="
+      binary = args[0].pack(spec[1])
+      @data[spec[0], binary.size] = binary
+    else
+      @data[spec[0], 32].unpack1(spec[1])
+    end
+  end
+
+  def initialize(filename)
+    @data = File.open(filename, "rb") { |f| f.read }
+    raise "Not a character" unless is_char
+    @filename = filename
+  end
+
+  # Display character summary
+  def show
+    puts "Name:  #{name}"
+    puts "Attrs: ST #{st}/#{st_max}, IQ #{iq}/#{iq_max}, DX #{dx}/#{dx_max}, CN #{cn}/#{cn_max}, LK #{lk}/#{lk_max}"
+    puts "HP:    #{hp}/#{hp_max}"
+    puts "SP:    #{sp}/#{sp_max}"
+    puts "Exp:   #{exp}"
+  end
+
+  # Heal character (fill HP and SP)
+  def heal
+    self.hp = hp_max
+    self.sp = sp_max
+  end
 
 
-# Check whether the file represents a character
-def is_char(data)
-  data[1] == 0x01
-end
+  private
 
-# Display character summary
-def show(data)
-  puts "Name:  #{data[0]}"
-  puts "Class: #{data[3]}"
-  puts "Attrs: ST #{data[4]}/#{data[9]}, IQ #{data[5]}/#{data[10]}, DX #{data[6]}/#{data[11]}, CN #{data[7]}/#{data[12]}, LK #{data[8]}/#{data[13]}"
-  puts "HP:    #{data[16]}/#{data[15]}"
-  puts "SP:    #{data[17]}/#{data[18]}"
-end
-
-# Heal character (fill HP and SP)
-def heal(data)
-  data[16] = data[15]
-  data[17] = data[18]
-  data
+  def is_char
+    @data[0x10].unpack1("c") == 0x01
+  end
 end
 
 def backup(name)
@@ -59,18 +80,13 @@ end
 # Main ---------------------------
 
 name = ARGV[0]
-data = read(name)
-
-unless is_char(data)
-  puts "Not a character"
-  pp data
-  exit 1
-end
 
 puts "== Before"
-show data
-puts
-heal data
-puts "== After"
-show data
-write(data, name)
+char = Bt1Char.new(name)
+char.show
+#pp data
+# puts
+# heal data
+# puts "== After"
+# show data
+# write(data, name)
