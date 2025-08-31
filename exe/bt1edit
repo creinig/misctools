@@ -3,11 +3,11 @@
 # TODO:
 # - print usage if no files
 # - print "written w/ backup" / "not written"
-# - cmd attrs=xy
 # - money
 # - yardoc etc
 # - tests
 # - operate on all chars in party file
+# - identify file args by whether file exists
 
 require "fileutils"
 
@@ -100,9 +100,14 @@ class Operations
       in ["heal"]
         @modifies = true
         lambda { |char| char.heal }
-      in "exp", /^\d+$/ => xp
+      in /^\w+$/ => property, /^\d+$/ => val
         @modifies = true
-        lambda { |char| char.exp = xp.to_i }
+        raise "No property <#{property}>" unless Bt1Char::STRUCTURE.key? property.to_sym
+        lambda { |char| char.send("#{property}=", val.to_i) }
+      in /^\w+$/ => property, /^\w+$/ => val
+        @modifies = true
+        raise "No property <#{property}>" unless Bt1Char::STRUCTURE.key? property.to_sym
+        lambda { |char| char.send("#{property}=", val.upcase) }
       in ["-w"]
         @write_at_end = true
         nil
