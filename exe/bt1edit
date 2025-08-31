@@ -146,8 +146,8 @@ end
 
 # Main ---------------------------
 
-files = ARGV.select {|a| a.downcase.end_with? ".tpw" }
-commands = ARGV.reject {|a| a.downcase.end_with? ".tpw" }
+files = ARGV.select { |a| File.exist? a }
+commands = ARGV - files
 ops = begin
         Operations.new(commands)
       rescue RuntimeError => e
@@ -164,6 +164,6 @@ files.each do |file|
   puts ">> #{file}"
   char = Bt1Char.new(file)
   ops.run(char)
-rescue RuntimeError=> e
+rescue RuntimeError => e
   puts e.message
 end
