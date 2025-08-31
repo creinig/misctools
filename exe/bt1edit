@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 # TODO:
-# - print usage if no files
 # - print "written w/ backup" / "not written"
 # - money
 # - yardoc etc
@@ -123,6 +122,26 @@ class Operations
   end
 end
 
+def usage
+  puts <<USAGE
+bt1edit [options actions files]
+
+Example: bt1edit -w st=18 exp=4000 heal show *.tpw
+
+Options:
+  -w       write modified character [false]
+
+Actions (executed in order, default "show"):
+  show     print character summary
+  heal     set current hp, sp and attrs to their "full" values
+  prop=val set specific property to <val>
+
+Supported properties:
+  #{Bt1Char::STRUCTURE.keys.join(", ")}
+
+USAGE
+end
+
 # Main ---------------------------
 
 files = ARGV.select {|a| a.downcase.end_with? ".tpw" }
@@ -133,6 +152,11 @@ ops = begin
         puts e.message
         exit 1
       end
+
+if files.empty?
+  usage
+  exit 0
+end
 
 files.each do |file|
   puts ">> #{file}"
