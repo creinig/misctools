@@ -1,11 +1,9 @@
 #!/usr/bin/env ruby
 
 # TODO:
-# - money
 # - yardoc etc
 # - tests
 # - operate on all chars in party file
-# - identify file args by whether file exists
 
 require "fileutils"
 
@@ -27,7 +25,8 @@ class Bt1Char
     hp: [0x2f, "s<"],
     sp_cur: [0x31, "s<"],
     sp: [0x33, "s<"],
-    exp: [0x45, "l<"]
+    exp: [0x45, "l<"],
+    gold: [0x49, "l<"]
   }
 
   def method_missing(name, *args)
@@ -57,6 +56,7 @@ class Bt1Char
     puts "HP:    #{hp_cur}/#{hp}"
     puts "SP:    #{sp_cur}/#{sp}"
     puts "Exp:   #{exp}"
+    puts "Gold:  #{gold}"
   end
 
   # Heal character (fill HP and SP)
