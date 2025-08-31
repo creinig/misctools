@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 # TODO:
-# - print "written w/ backup" / "not written"
 # - money
 # - yardoc etc
 # - tests
@@ -69,8 +68,9 @@ class Bt1Char
 
   # Write character back, storing a backup copy in ./backup
   def write
-    backup
+    bkp = backup
     File.open(@filename, "wb") { |f| f.write(@data) }
+    puts "Written to #{@filename}, original kept as #{bkp}"
   end
 
   private
@@ -81,7 +81,9 @@ class Bt1Char
 
   def backup
     FileUtils.mkdir_p("backup")
-    FileUtils.cp(@filename, "backup/#{@filename}-#{Time.now.strftime('%FT%T%:z')}")
+    target = "backup/#{@filename}-#{Time.now.strftime('%FT%T%:z')}"
+    FileUtils.cp(@filename, target)
+    target
   end
 end
 
