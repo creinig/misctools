@@ -6,6 +6,8 @@
 
 require "fileutils"
 
+RUN_TS = Time.now
+
 class Bt1Char
   STRUCTURE = {
     # attr, startidx, pack_pattern [, read_postprocessor]
@@ -81,8 +83,9 @@ class Bt1Char
   end
 
   def backup
-    FileUtils.mkdir_p("backup")
-    target = "backup/#{@filename}-#{Time.now.strftime('%FT%T%:z')}"
+    dest = "backup/#{Time.now.strftime('%FT%T%:z')}"
+    target = "#{dest}/#{@filename}"
+    FileUtils.mkdir_p(dest)
     FileUtils.cp(@filename, target)
     target
   end
