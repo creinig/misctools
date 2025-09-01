@@ -22,8 +22,8 @@ class Bt1Char
     lk_cur: [0x29, "s<"],
     hp: [0x2d, "s<"],
     hp_cur: [0x2f, "s<"],
-    sp: [0x31, "s<"],
-    sp_cur: [0x33, "s<"],
+    sp_cur: [0x31, "s<"],
+    sp: [0x33, "s<"],
     exp: [0x45, "l<"],
     gold: [0x49, "l<"]
   }
