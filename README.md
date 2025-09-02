@@ -6,6 +6,7 @@ Random collection of small tools I needed at the moment
 * [durationcalc](exe/durationcalc): Add / subtract durations (HH:MM)
 * [qr](exe/qr): Encode the first argument as QR code and display it on the console
 * [querymvn](exe/querymvn) : Fetch a package from your maven repository, printing all diagnostic info
+* [bt1edit](exe/bt1edit) : Bard's Tale 1 (DOS) character editor
 
 ## Installation
 
