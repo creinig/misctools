@@ -169,7 +169,9 @@ end
 
 def usage
   puts <<USAGE
-  bt1edit [options actions files]
+  Bard's Tale 1 (DOS) Character Editor
+
+  Usage: bt1edit [options actions files]
 
   Example: bt1edit -w st=18 exp=4000 heal show *.tpw
 
