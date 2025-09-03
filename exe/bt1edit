@@ -7,6 +7,7 @@
 require "fileutils"
 
 RUN_TS = Time.now
+HAS_GIT = system("command -v git >/dev/null 2>&1")
 
 class Bt1Char
   STRUCTURE = {
@@ -95,6 +96,8 @@ class Bt1Char
 end
 
 class Operations
+  def written? = @write_at_end && @modifies
+
   def initialize(cmd_args)
     cmd_args = ["show"] if cmd_args.empty?
 
@@ -127,7 +130,7 @@ class Operations
 
   def run(char)
     @ops.each { |op| op.yield(char) }
-    char.write if @modifies && @write_at_end
+    char.write if !HAS_GIT && @modifies && @write_at_end
   end
 end
 
@@ -176,7 +179,9 @@ def usage
   Example: bt1edit -w st=18 exp=4000 heal show *.tpw
 
   Options:
-    -w       write modified character [false]
+    -w       write modified character [false].
+             Modified chars will be committed locally to git if possible
+             or saved to backup/<timestamp> if git is not available.
 
   Actions (executed in order, default "show"):
     show     print character summary
@@ -209,9 +214,19 @@ if files.empty?
   exit 0
 end
 
-load_chars(files).each do |char|
+chars = load_chars(files)
+chars.each do |char|
   puts ">> #{char.filename}"
   ops.run(char)
 rescue RuntimeError => e
   puts e.message
+end
+
+if HAS_GIT && ops.written?
+  basedir = File.dirname files[0]
+  unless Dir.exist? "#{basedir}/.git"
+    system("git", "init", chdir: basedir)
+  end
+  system("git", "add", *(chars.map { |c| c.filename }), chdir: basedir)
+  system("git", "commit", "-m", "bt1edit #{ARGV.join(" ")}", chdir: basedir)
 end
