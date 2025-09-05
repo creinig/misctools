@@ -6,12 +6,14 @@
 
 require "fileutils"
 
+# Timestamp of this run (for backup naming)
 RUN_TS = Time.now
 HAS_GIT = system("command -v git >/dev/null 2>&1")
 
+# Facade arount a character
 class Bt1Char
+  # File structure spec (attr: startidx, pack_pattern [, read_postprocessor])
   STRUCTURE = {
-    # attr, startidx, pack_pattern [, read_postprocessor]
     name: [0x00, "a16", lambda {|v| v.split("\x00")[0] }],
     st_cur: [0x17, "s<"],
     iq_cur: [0x19, "s<"],
@@ -75,9 +77,9 @@ class Bt1Char
 
   # Write character back, storing a backup copy in ./backup
   def write
-    bkp = backup
+    bkp = backup unless HAS_GIT
     File.open(@filename, "wb") { |f| f.write(@data) }
-    puts "Written to #{@filename}, original kept as #{bkp}"
+    puts "Written to #{@filename}#{HAS_GIT ? "" : ", original kept as #{bkp}"}"
   end
 
   private
@@ -130,7 +132,7 @@ class Operations
 
   def run(char)
     @ops.each { |op| op.yield(char) }
-    char.write if !HAS_GIT && @modifies && @write_at_end
+    char.write if @modifies && @write_at_end
   end
 end
 
