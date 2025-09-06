@@ -15,6 +15,7 @@ class Bt1Char
   # File structure spec (attr: startidx, pack_pattern [, read_postprocessor])
   STRUCTURE = {
     name: [0x00, "a16", lambda {|v| v.split("\x00")[0] }],
+    curses: [0x11, "C"],
     st_cur: [0x17, "s<"],
     iq_cur: [0x19, "s<"],
     dx_cur: [0x1b, "s<"],
@@ -62,7 +63,7 @@ class Bt1Char
   def show
     puts "Name:  #{name}"
     puts "Attrs: ST #{st_cur}/#{st}, IQ #{iq_cur}/#{iq}, DX #{dx_cur}/#{dx}, CN #{cn_cur}/#{cn}, LK #{lk_cur}/#{lk}"
-    puts "HP:    #{hp_cur}/#{hp}"
+    puts "HP:    #{hp_cur}/#{hp} #{curses_to_s}"
     puts "SP:    #{sp_cur}/#{sp}, Spell lvls (Con/Mag/Sor): #{con_lvl}/#{mag_lvl}/#{sor_lvl}"
     puts "Exp:   #{exp}"
     puts "Gold:  #{gold}"
@@ -72,7 +73,12 @@ class Bt1Char
   def heal
     self.hp_cur = hp
     self.sp_cur = sp
+    self.curses = 0x00
     self.st_cur, self.dx_cur, self.iq_cur, self.cn_cur, self.lk_cur = st, dx, iq, cn, lk
+  end
+
+  def curses_to_s
+    [curses & 0x04 != 0 ? "OLD" : nil].compact.join(", ")
   end
 
   # Write character back, storing a backup copy in ./backup
