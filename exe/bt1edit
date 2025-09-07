@@ -34,7 +34,7 @@ class Bt1Char
     gold: [0x49, "l<"],
     con_lvl: [0x52, "C"],
     mag_lvl: [0x53, "C"],
-    sor_lvl: [0x54, "C"]
+    sor_lvl: [0x51, "C"]
   }
 
   def method_missing(name, *args)
