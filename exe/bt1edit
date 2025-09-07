@@ -78,7 +78,15 @@ class Bt1Char
   end
 
   def curses_to_s
-    [curses & 0x04 != 0 ? "OLD" : nil].compact.join(", ")
+    [
+      curses & 0x02 != 0 ? "DEAD" : nil,
+      curses & 0x04 != 0 ? "OLD" : nil,
+      curses & 0x08 != 0 ? "POISONED" : nil,
+      curses & 0x10 != 0 ? "STONE" : nil,
+      curses & 0x20 != 0 ? "PARALYZED" : nil,
+      curses & 0x40 != 0 ? "POSSESSED" : nil,
+      curses & 0x80 != 0 ? "NUTS" : nil
+    ].compact.join(", ")
   end
 
   # Write character back, storing a backup copy in ./backup
